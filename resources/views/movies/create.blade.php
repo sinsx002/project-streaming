@@ -119,13 +119,8 @@
         <label for="description">Deskripsi:</label>
         <textarea name="description" id="description" rows="5" required></textarea>
 
-        <label for="thumbnail">Pilih Thumbnail:</label>
-        <select name="thumbnail">
-            <option value="">-- Pilih Thumbnail --</option>
-            @foreach ($imageFiles as $image)
-                <option value="{{ $image }}">{{ $image }}</option>
-            @endforeach
-        </select>
+        <label for="image">Gambar</label>
+        <input type="file" name="image" accept="image/*">
 
         <button type="submit">Simpan</button>
     </form>

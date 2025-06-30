@@ -40,13 +40,24 @@ class MovieController extends Controller
             'release_date' => 'required|date',
             'id_genre' => 'required|integer',
             'description' => 'required|string',
-            'thumbnail' => 'nullable|string',
+            'image' => 'nullable|file|mimes:jpg,jpeg,png|max:2048',
             'duration' => 'nullable|integer',
         ]);
 
-        $data['thumbnail'] = $request->input('thumbnail');
+        if ($request->hasFile('image')) {
+            $originalName = $request->file('image')->getClientOriginalName();
+            $extension = $request->file('image')->getClientOriginalExtension();
+            $filename = time() . '_' . Str::slug(pathinfo($originalName, PATHINFO_FILENAME)) . '.' . $extension;
 
-        // Ambil semua data film dulu untuk mencari ID terakhir
+            $request->file('image')->move(public_path('images'), $filename);
+
+            // Masukkan nama file sebagai thumbnail
+            $data['thumbnail'] = $filename;
+        } else {
+            $data['thumbnail'] = null;
+        }
+
+        // Ambil ID terakhir dari API untuk generate ID baru
         $getResponse = Http::get('http://localhost/project-streamingg/movies.php');
         if ($getResponse->successful()) {
             $movies = $getResponse->json();
