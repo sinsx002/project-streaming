@@ -81,4 +81,44 @@ class AuthController extends Controller
         session()->forget('role');
         return redirect('/login')->with('error', 'Anda telah logout.');
     }
+
+    public function showRegister()
+    {
+        return view('register');
+    }
+
+    public function register(Request $request)
+    {
+        $request->validate([
+            'username' => 'required',
+            'first_name' => 'required',
+            'last_name' => 'required',
+            'email' => 'required|email',
+            'password' => 'required|min:6'
+        ]);
+
+        // Ambil data users.php untuk mendapatkan id terakhir
+        $response = Http::get('http://localhost/project-streamingg/users.php');
+        $users = $response->json();
+
+        $lastId = collect($users)->max('id_user') ?? 0;
+        $newId = $lastId + 1;
+
+        $response = Http::post('http://localhost/project-streamingg/users.php', [
+            'id_user'    => $newId,
+            'username'   => $request->username,
+            'first_name' => $request->first_name,
+            'last_name'  => $request->last_name,
+            'email'      => $request->email,
+            'password'   => $request->password,
+        ]);
+
+        $result = $response->json();
+
+        if (isset($result['message']) && $result['message'] === 'User added') {
+            return redirect('/login')->with('success', 'Berhasil mendaftar. Silakan login.');
+        } else {
+            return back()->with('error', $result['message'] ?? 'Gagal mendaftar');
+        }
+    }
 }

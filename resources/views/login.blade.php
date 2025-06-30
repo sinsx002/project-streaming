@@ -165,9 +165,7 @@
             </form>
 
             <div class="footer-link">
-
-<p>Belum punya akun? <a href="{{ route('register') }}">Daftar Sekarang</a></p>
-
+                Belum punya akun? <a href="{{ url('/register') }}">Daftar sekarang</a>
             </div>
         </div>
     </div>
