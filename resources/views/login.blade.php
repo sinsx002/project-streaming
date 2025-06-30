@@ -73,10 +73,24 @@
         }
 
         .login-box h2 {
-            margin-bottom: 30px;
+            margin-bottom: 20px;
             color: red;
             text-align: center;
             font-size: 28px;
+        }
+
+        .success {
+            color: #4CAF50;
+            font-size: 14px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .error {
+            color: #ff4d4d;
+            font-size: 14px;
+            margin-bottom: 15px;
+            text-align: center;
         }
 
         label {
@@ -106,13 +120,6 @@
 
         button:hover {
             background-color: #cc0000;
-        }
-
-        .error {
-            color: #ff4d4d;
-            font-size: 14px;
-            margin-bottom: 15px;
-            text-align: center;
         }
 
         .footer-link {
@@ -148,6 +155,10 @@
     <div class="login-container">
         <div class="login-box">
             <h2>Login to MyFlix</h2>
+
+            @if(session('success'))
+                <p class="success">{{ session('success') }}</p>
+            @endif
 
             @if(session('error'))
                 <p class="error">{{ session('error') }}</p>
