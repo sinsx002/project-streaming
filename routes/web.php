@@ -6,16 +6,14 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\MovieController;
 use App\Http\Controllers\AccountController;
 
-
-
-// 👇 route login dan register
+// === Auth routes ===
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login']);
 Route::get('/register', [AuthController::class, 'showRegister']);
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-// 👇 dashboard
+// === Movie Dashboard ===
 Route::get('/dashboard/movies', [DashboardController::class, 'dashboard'])->middleware('web');
 Route::get('/dashboard/movies/create', [MovieController::class, 'create']);
 Route::post('/dashboard/movies', [MovieController::class, 'store']);
@@ -24,15 +22,15 @@ Route::delete('/dashboard/movies/{id}', [MovieController::class, 'destroy']);
 Route::get('/dashboard/movies/{id}/edit', [MovieController::class, 'editFilm']);
 Route::put('/dashboard/movies/{id}', [MovieController::class, 'update']);
 
-
+// === Account Routes (user) ===
 Route::middleware(['check.user'])->group(function () {
     Route::get('/account', [AccountController::class, 'show'])->name('account.show');
     Route::get('/account/edit', [AccountController::class, 'edit'])->name('account.edit');
     Route::put('/account/update', [AccountController::class, 'update'])->name('account.update');
     Route::post('/account/delete', [AccountController::class, 'destroy'])->name('account.destroy');
-
 });
 
-
-
+// === Admin User Management ===
+Route::get('/admin/users', [AccountController::class, 'adminIndex'])->name('admin.users');
+Route::delete('/admin/users/{id_user}', [AccountController::class, 'adminDestroy'])->name('admin.users.destroy');
 

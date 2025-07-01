@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @php
-    $user = $user ?? session('user'); // fallback jika tidak dikirim dari controller
+    $user = session('user');
 @endphp
 
 @section('content')
@@ -10,23 +10,22 @@
 
     <table style="width: 100%; border-collapse: collapse;">
         <tr>
-            <td style="padding: 8px;">Username:</td>
-            <td style="padding: 8px;">{{ $user['username'] }}</td>
+            <td style="padding: 10px;">Nama:</td>
+            <td style="padding: 10px;">{{ $user['first_name'] ?? '' }} {{ $user['last_name'] ?? '' }}</td>
         </tr>
         <tr>
-            <td style="padding: 8px;">Nama Lengkap:</td>
-            <td style="padding: 8px;">{{ $user['first_name'] }} {{ $user['last_name'] }}</td>
+            <td style="padding: 10px;">Email:</td>
+            <td style="padding: 10px;">{{ $user['email'] ?? '' }}</td>
         </tr>
         <tr>
-            <td style="padding: 8px;">Email:</td>
-            <td style="padding: 8px;">{{ $user['email'] }}</td>
+            <td style="padding: 10px;">Username:</td>
+            <td style="padding: 10px;">{{ $user['username'] ?? '' }}</td>
         </tr>
     </table>
 
     <div style="margin-top: 30px;">
-        <a href="{{ route('account.edit') }}" style="padding: 10px 20px; background-color: #ff0000; color: white; border: none; border-radius: 5px; text-decoration: none; font-weight: bold;">
-            Edit Profil
-        </a>
+        <a href="{{ route('account.edit') }}" class="btn btn-danger">Edit Profil</a>
+        <a href="/dashboard/movies" class="btn btn-secondary">Kembali ke Dashboard</a>
     </div>
 </div>
 @endsection

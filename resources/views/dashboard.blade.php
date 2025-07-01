@@ -195,24 +195,29 @@
     </style>
 </head>
 <body>
-    <div class="header">
+   <div class="header">
+    <div style="display: flex; align-items: center; gap: 30px;">
         <h1>MyFlix</h1>
         <form method="GET" action="{{ url('/dashboard/movies') }}" class="search-form">
             <input type="text" name="search" class="search-bar" placeholder="Search movies..." value="{{ request('search') }}">
             <button type="submit" class="search-button">Search</button>
         </form>
-        <div class="header-buttons">
-            @if(session('role') === 'admin')
-                <a href="{{ url('/dashboard/movies/create') }}"><button>Tambah Film</button></a>
-                <a href="{{ url('/dashboard/movies/edit') }}"><button>Edit Film</button></a>
-            @endif
-        <a href="{{ route('account.edit') }}" class="btn btn-danger">Account</a>
-            <form method="POST" action="{{ route('logout') }}">
-                @csrf
-                <button>Logout</button>
-            </form>
-        </div>
     </div>
+    
+    <div class="header-buttons">
+        @if(session('role') === 'admin')
+            <a href="{{ url('/dashboard/movies/create') }}"><button>Tambah Film</button></a>
+            <a href="{{ url('/dashboard/movies/edit') }}"><button>Edit Film</button></a>
+            <a href="{{ route('admin.users') }}"><button>Kelola user</button></a>
+        @endif
+
+        <a href="{{ route('account.edit') }}"><button>Account</button></a>
+        <form method="POST" action="{{ route('logout') }}" style="display:inline;">
+            @csrf
+            <button>Logout</button>
+        </form>
+    </div>
+</div>
 
     <div class="swiper">
         <div class="swiper-wrapper">

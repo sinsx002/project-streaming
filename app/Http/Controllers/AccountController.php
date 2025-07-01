@@ -8,15 +8,15 @@ use Illuminate\Support\Facades\Http;
 class AccountController extends Controller
 {
     public function show()
-{
-    $user = session('user');
+    {
+        $user = session('user');
 
-    if (!$user) {
-        return redirect('/login')->withErrors(['msg' => 'Silakan login terlebih dahulu.']);
+        if (!$user) {
+            return redirect('/login')->withErrors(['msg' => 'Silakan login terlebih dahulu.']);
+        }
+
+        return view('account.show', compact('user'));
     }
-
-    return view('account.show', compact('user'));
-}
 
     public function edit()
     {
@@ -92,5 +92,32 @@ class AccountController extends Controller
         $request->session()->flush();
 
         return redirect('/login')->with('success', 'Akun berhasil dihapus.');
+    }
+
+    public function adminIndex()
+    {
+        if (session('role') !== 'admin') {
+            return redirect('/dashboard/movies');
+        }
+
+        $response = Http::get('http://localhost/project-streamingg/users.php');
+        $users = $response->json();
+
+        return view('admin.users.index', compact('users'));
+    }
+
+    public function adminDestroy($id_user)
+    {
+        if (session('role') !== 'admin') {
+            return redirect('/dashboard/movies');
+        }
+
+        $response = Http::delete("http://localhost/project-streamingg/users.php?id_user={$id_user}");
+
+        if ($response->ok()) {
+            return redirect()->route('admin.users')->with('success', 'User berhasil dihapus.');
+        } else {
+            return redirect()->route('admin.users')->withErrors(['Gagal menghapus user.']);
+        }
     }
 }
