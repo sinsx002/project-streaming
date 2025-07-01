@@ -1,78 +1,124 @@
-@extends('layouts.app')
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Edit Pengguna</title>
+    <style>
+        body {
+            background-color: #141414;
+            color: white;
+            padding: 30px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
 
-@php
-    $user = $user ?? session('user'); // fallback jika tidak dikirim compact
-@endphp
+        h2 {
+            font-size: 32px;
+            color: red;
+            margin-bottom: 20px;
+        }
 
-@section('content')
-<div style="background-color: #111; color: white; padding: 30px; max-width: 600px; margin: 50px auto; border-radius: 12px; box-shadow: 0 0 20px rgba(255,0,0,0.4);">
+        form {
+            background-color: #1f1f1f;
+            padding: 20px 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+            max-width: 600px;
+            width: 100%;
+        }
 
-    <h2 style="color: #ff0000; margin-bottom: 25px;">Edit Profil</h2>
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
 
-    @if(session('success'))
-        <div style="background-color: #222; border: 1px solid #0f0; padding: 10px; margin-bottom: 20px; border-radius: 6px; color: #0f0;">
-            {{ session('success') }}
-        </div>
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: none;
+            border-radius: 5px;
+            background-color: #2a2a2a;
+            color: white;
+        }
+
+        .form-buttons {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        button, .cancel-button {
+            background-color: red;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        button:hover, .cancel-button:hover {
+            background-color: #e60000;
+        }
+
+        .success-message {
+            color: limegreen;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h2>Edit Pengguna</h2>
+
+    @if (session('success'))
+        <div class="success-message">{{ session('success') }}</div>
     @endif
 
     @if ($errors->any())
-        <div style="background-color: #222; border: 1px solid #f00; padding: 10px; margin-bottom: 20px; border-radius: 6px; color: #f00;">
-            <ul style="margin: 0; padding-left: 15px;">
-                @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
+        <div class="success-message" style="color: yellow;">
+            @foreach ($errors->all() as $error)
+                <div>{{ $error }}</div>
+            @endforeach
         </div>
     @endif
 
-    {{-- Form Update --}}
-    <form method="POST" action="{{ route('account.update') }}">
+    <form action="{{ route('account.update') }}" method="POST">
         @csrf
         @method('PUT')
 
-        <div style="margin-bottom: 20px;">
-            <label for="username">Username</label><br>
-            <input type="text" name="username" id="username"
-                value="{{ old('username', $user['username']) }}"
-                style="width: 100%; padding: 10px; background: #222; border: 1px solid #444; color: white; border-radius: 6px;">
-        </div>
+        <label for="username">Username</label>
+        <input type="text" id="username" name="username" value="{{ old('username', $user['username']) }}" required>
 
-        <div style="margin-bottom: 20px;">
-            <label for="first_name">First Name</label><br>
-            <input type="text" name="first_name" id="first_name"
-                value="{{ old('first_name', $user['first_name']) }}"
-                style="width: 100%; padding: 10px; background: #222; border: 1px solid #444; color: white; border-radius: 6px;">
-        </div>
+        <label for="first_name">Nama Depan</label>
+        <input type="text" id="first_name" name="first_name" value="{{ old('first_name', $user['first_name']) }}">
 
-        <div style="margin-bottom: 20px;">
-            <label for="last_name">Last Name</label><br>
-            <input type="text" name="last_name" id="last_name"
-                value="{{ old('last_name', $user['last_name']) }}"
-                style="width: 100%; padding: 10px; background: #222; border: 1px solid #444; color: white; border-radius: 6px;">
-        </div>
+        <label for="last_name">Nama Belakang</label>
+        <input type="text" id="last_name" name="last_name" value="{{ old('last_name', $user['last_name']) }}">
 
-        <div style="margin-bottom: 30px;">
-            <label for="email">Email</label><br>
-            <input type="email" name="email" id="email"
-                value="{{ old('email', $user['email']) }}"
-                style="width: 100%; padding: 10px; background: #222; border: 1px solid #444; color: white; border-radius: 6px;">
-        </div>
+        <label for="email">Email</label>
+        <input type="text" id="email" name="email" value="{{ old('email', $user['email']) }}">
 
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <button type="submit"
-                style="padding: 10px 20px; background-color: #ff0000; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">
-                Simpan Perubahan
-            </button>
+        <hr style="border: none; border-top: 1px solid #444; margin: 30px 0;">
+
+        <h3 style="color: #e50914; margin-bottom: 10px;">Ubah Password</h3>
+
+        <label for="current_password">Password Lama</label>
+        <input type="password" id="current_password" name="current_password" required>
+
+        <label for="new_password">Password Baru</label>
+        <input type="password" id="new_password" name="new_password" required>
+
+        <label for="new_password_confirmation">Konfirmasi Password Baru</label>
+        <input type="password" id="new_password_confirmation" name="new_password_confirmation" required>
+
+        <div class="form-buttons">
+            <button type="submit">Simpan Perubahan</button>
+            <a href="{{ url('/account') }}" class="cancel-button">Cancel</a>
+        </div>
     </form>
-
-        {{-- Form Delete --}}
-        <form method="POST" action="{{ route('account.destroy') }}">
-            @csrf
-            <button type="submit" onclick="return confirm('Yakin ingin menghapus akun?')"
-                style="padding: 10px 20px; background-color: #222; color: #ff0000; border: 1px solid #ff0000; border-radius: 5px; cursor: pointer; font-weight: bold;">
-                Hapus Akun
-            </button>
-        </form>
-    </div>
-</div>
-@endsection
+</body>
+</html>

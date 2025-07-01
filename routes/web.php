@@ -24,7 +24,7 @@ Route::put('/dashboard/movies/{id}', [MovieController::class, 'update']);
 
 // === Account Routes (user) ===
 Route::middleware(['check.user'])->group(function () {
-    Route::get('/account', [AccountController::class, 'show'])->name('account.show');
+    Route::get('/account', [AccountController::class, 'show'])->name('account.profile');
     Route::get('/account/edit', [AccountController::class, 'edit'])->name('account.edit');
     Route::put('/account/update', [AccountController::class, 'update'])->name('account.update');
     Route::post('/account/delete', [AccountController::class, 'destroy'])->name('account.destroy');

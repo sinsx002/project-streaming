@@ -15,7 +15,7 @@ class AccountController extends Controller
             return redirect('/login')->withErrors(['msg' => 'Silakan login terlebih dahulu.']);
         }
 
-        return view('account.show', compact('user'));
+        return view('account.profile', compact('user'));
     }
 
     public function edit()
@@ -72,7 +72,7 @@ class AccountController extends Controller
         $user['email']      = $request->email;
         session(['user' => $user]);
 
-        return redirect()->route('account.show')->with('success', 'Profil berhasil diperbarui.');
+        return redirect()->route('account.profile')->with('success', 'Profil berhasil diperbarui.');
     }
 
     public function destroy(Request $request)

@@ -252,7 +252,7 @@
             <a href="{{ route('admin.users') }}"><button>Kelola user</button></a>
         @endif
 
-        <a href="{{ route('account.edit') }}"><button>Account</button></a>
+        <a href="{{ url('/account') }}"><button>Account</button></a>
         <form method="POST" action="{{ route('logout') }}" style="display:inline;">
             @csrf
             <button>Logout</button>
