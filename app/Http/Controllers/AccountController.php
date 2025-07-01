@@ -8,36 +8,89 @@ use Illuminate\Support\Facades\Http;
 class AccountController extends Controller
 {
     public function show()
-    {
-        return view('account');
+{
+    $user = session('user');
+
+    if (!$user) {
+        return redirect('/login')->withErrors(['msg' => 'Silakan login terlebih dahulu.']);
     }
+
+    return view('account.show', compact('user'));
+}
 
     public function edit()
     {
-        return view('account_edit');
+        $user = session('user');
+
+        if (!$user) {
+            return redirect('/login')->withErrors(['msg' => 'Silakan login terlebih dahulu.']);
+        }
+
+        return view('account.edit', compact('user'));
     }
 
     public function update(Request $request)
     {
         $user = session('user');
 
-        // Simpan ke API (users.php)
-        $response = Http::put('http://localhost/project-streamingg/users.php?id_user=' . $user['id_user'], [
+        if (!$user) {
+            return redirect('/login')->withErrors(['msg' => 'User tidak ditemukan.']);
+        }
+
+        $request->validate([
+            'username' => 'required|string',
+            'first_name' => 'required|string',
+            'last_name' => 'required|string',
+            'email' => 'required|email',
+        ]);
+
+        // Kirim ke API
+        $response = Http::put("http://localhost/project-streamingg/users.php?id_user=" . $user['id_user'], [
+            'id_user'    => $user['id_user'], // tambahkan ini agar PUT valid
             'username'   => $request->username,
             'first_name' => $request->first_name,
             'last_name'  => $request->last_name,
             'email'      => $request->email,
+            'password'   => $user['password'] ?? '', // pastikan dikirim jika dibutuhkan
         ]);
 
-        // Update session
-        $updatedUser = $user;
-        $updatedUser['username'] = $request->username;
-        $updatedUser['first_name'] = $request->first_name;
-        $updatedUser['last_name'] = $request->last_name;
-        $updatedUser['email'] = $request->email;
+        // Debug opsional:
+        // logger($response->body());
 
-        session(['user' => $updatedUser]);
+        if (!$response->ok()) {
+            return redirect()
+                ->back()
+                ->withErrors(['msg' => 'Gagal mengupdate data.'])
+                ->withInput()
+                ->with(['user' => $user]); // kirim user agar tidak undefined
+        }
+
+        // Update session
+        $user['username']   = $request->username;
+        $user['first_name'] = $request->first_name;
+        $user['last_name']  = $request->last_name;
+        $user['email']      = $request->email;
+        session(['user' => $user]);
 
         return redirect()->route('account.show')->with('success', 'Profil berhasil diperbarui.');
+    }
+
+    public function destroy(Request $request)
+    {
+        $user = session('user');
+
+        if (!$user) {
+            return redirect('/login')->withErrors(['msg' => 'User tidak ditemukan.']);
+        }
+
+        $response = Http::delete("http://localhost/project-streamingg/users.php?id_user=" . $user['id_user']);
+
+        if (!$response->ok()) {
+            return redirect()->back()->withErrors(['msg' => 'Gagal menghapus akun.']);
+        }
+
+        $request->session()->flush();
+
+        return redirect('/login')->with('success', 'Akun berhasil dihapus.');
     }
 }

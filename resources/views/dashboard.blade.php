@@ -206,7 +206,7 @@
                 <a href="{{ url('/dashboard/movies/create') }}"><button>Tambah Film</button></a>
                 <a href="{{ url('/dashboard/movies/edit') }}"><button>Edit Film</button></a>
             @endif
-            <a href="{{ url('/account') }}"><button>Account</button></a>
+        <a href="{{ route('account.edit') }}" class="btn btn-danger">Account</a>
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
                 <button>Logout</button>

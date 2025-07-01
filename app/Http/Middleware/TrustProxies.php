@@ -1,13 +1,12 @@
 <?php
 
-namespace App\Http\Middleware;
+namespace App\Http\Middleware; // Perhatikan huruf besar
 
 use Illuminate\Http\Middleware\TrustProxies as Middleware;
-use Illuminate\Http\Request;
 
 class TrustProxies extends Middleware
 {
     protected $proxies;
 
-    protected $headers = Request::HEADER_X_FORWARDED_ALL;
+    protected $headers = 0b111111; // Setara dengan HEADER_X_FORWARDED_ALL
 }

@@ -8,10 +8,10 @@ use Symfony\Component\HttpFoundation\Response;
 
 class CheckUserSession
 {
-    public function handle(Request $request, Closure $next): Response
+    public function handle(Request $request, Closure $next)
     {
-        if (!session()->has('user')) {
-            return redirect('/login')->with('error', 'Anda harus login terlebih dahulu.');
+        if (!$request->session()->has('user')) {
+            return redirect('/login');
         }
 
         return $next($request);
