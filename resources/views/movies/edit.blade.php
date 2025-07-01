@@ -102,7 +102,7 @@
                 <tr>
                     <td>{{ $movie['id_movie'] }}</td>
                     <td>{{ $movie['title'] }}</td>
-                    <td>{{ $movie['id_genre'] }}</td>
+                    <td>{{ $movie['genre'] }}</td>
                     <td>{{ $movie['release_date'] }}</td>
                     <td>{{ isset($movie['duration']) ? $movie['duration'] . 'm' : '-' }}</td>
                     <td>{{ $movie['thumbnail'] ?? '-' }}</td>

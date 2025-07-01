@@ -107,11 +107,11 @@
         <label for="title">Judul:</label>
         <input type="text" name="title" id="title" required>
 
+        <label for="genre">Genre:</label>
+        <input type="text" name="genre" id="genre" required>
+
         <label for="release_date">Tanggal Rilis:</label>
         <input type="date" name="release_date" id="release_date" required>
-
-        <label for="id_genre">ID Genre:</label>
-        <input type="number" name="id_genre" id="id_genre" required>
 
         <label for="duration">Durasi (menit):</label>
         <input type="number" name="duration" id="duration">

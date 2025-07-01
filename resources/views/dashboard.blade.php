@@ -40,30 +40,26 @@
 
         .search-form {
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             justify-content: center;
             flex-grow: 1;
             margin: 0 20px;
+            position: relative;
+        }
+
+        .search-container {
+            position: relative;
+            width: 300px;
         }
 
         .search-bar {
             background-color: #333;
-            border: none;
-            border-radius: 4px 0 0 4px;
+            border: 2px solid red;
+            border-radius: 4px 4px 4px 4px;
             padding: 10px 16px;
             color: white;
             font-size: 16px;
-            width: 300px;
-        }
-
-        .search-button {
-            background-color: red;
-            color: white;
-            border: none;
-            border-radius: 0 4px 4px 0;
-            padding: 10px 20px;
-            cursor: pointer;
-            font-size: 16px;
+            width: 350px;
         }
 
         .swiper {
@@ -192,14 +188,59 @@
             cursor: pointer;
             font-size: 14px;
         }
+
+        #suggestions-box {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 127%;
+            background: #1c1c1c;
+            border: 1px solid #444;
+            border-top: none;
+            border-radius: 0 0 6px 6px;
+            max-height: 250px;
+            overflow-y: auto;
+            z-index: 1000;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+            display: none;
+        }
+
+        #suggestions-box a {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            color: white;
+            text-decoration: none;
+            border-bottom: 1px solid #333;
+            transition: background 0.2s;
+        }
+
+        #suggestions-box a:last-child {
+            border-bottom: none;
+        }
+
+        #suggestions-box a:hover {
+            background-color: #333;
+        }
+
+        #suggestions-box img {
+            width: 40px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 4px;
+            flex-shrink: 0;
+        }
     </style>
 </head>
 <body>
     <div class="header">
         <h1>MyFlix</h1>
-        <form method="GET" action="{{ url('/dashboard/movies') }}" class="search-form">
-            <input type="text" name="search" class="search-bar" placeholder="Search movies..." value="{{ request('search') }}">
-            <button type="submit" class="search-button">Search</button>
+        <form method="GET" action="{{ url('/dashboard/movies') }}" class="search-form" id="search-form">
+            <div class="search-container">
+                <input type="text" name="search" class="search-bar" id="search-input" placeholder="Search movies..." autocomplete="off" value="{{ request('search') }}">
+                <div id="suggestions-box"></div>
+            </div>
         </form>
         <div class="header-buttons">
             @if(session('role') === 'admin')
@@ -238,7 +279,7 @@
                     <div class="info">
                         <div class="title">{{ $movie['title'] }}</div>
                         <div class="release">Rilis: {{ $movie['release_date'] }}</div>
-                        <div class="genre">Genre ID: {{ $movie['id_genre'] }}</div>
+                        <div class="genre">Genre: {{ $movie['genre'] }}</div>
                         <div class="duration">Durasi: {{ isset($movie['duration']) ? $movie['duration'] . 'm' : 'N/A' }}</div>
                         <div class="description">{{ $movie['description'] }}</div>
                     </div>
@@ -255,6 +296,43 @@
             slidesPerView: 1,
             pagination: { el: '.swiper-pagination' },
         });
+    </script>
+
+    <script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const searchInput = document.getElementById("search-input");
+        const suggestionsBox = document.getElementById("suggestions-box");
+
+        searchInput.addEventListener("input", function () {
+            const query = this.value;
+            if (query.length < 2) {
+                suggestionsBox.style.display = "none";
+                return;
+            }
+
+            fetch(`/dashboard/movies/search-suggestions?search=${encodeURIComponent(query)}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.length === 0) {
+                        suggestionsBox.innerHTML = "<div style='padding:10px; color:#ccc;'>No results</div>";
+                    } else {
+                        suggestionsBox.innerHTML = data.map(movie =>
+                            `<a href="/dashboard/movies/${movie.id}" style="display:flex; align-items:center; gap:10px; padding:10px; color:white; text-decoration:none; border-bottom:1px solid #333;">
+                                <img src="/images/${movie.thumbnail.split('/').pop()}" style="width:40px; height:60px; object-fit:cover; border-radius:4px;">
+                                <span>${movie.title}</span>
+                            </a>`
+                        ).join('');
+                    }
+                    suggestionsBox.style.display = "block";
+                });
+        });
+
+        document.addEventListener("click", function (e) {
+            if (!document.getElementById("search-form").contains(e.target)) {
+                suggestionsBox.style.display = "none";
+            }
+        });
+    });
     </script>
 </body>
 </html>

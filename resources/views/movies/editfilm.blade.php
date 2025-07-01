@@ -100,11 +100,11 @@
         <label for="title">Judul:</label>
         <input type="text" name="title" id="title" value="{{ $movie['title'] }}" required>
 
+        <label for="genre">Genre:</label>
+        <input type="text" name="genre" id="genre" value="{{ $movie['genre'] }}" required>
+
         <label for="release_date">Tanggal Rilis:</label>
         <input type="date" name="release_date" id="release_date" value="{{ $movie['release_date'] }}" required>
-
-        <label for="id_genre">ID Genre:</label>
-        <input type="number" name="id_genre" id="id_genre" value="{{ $movie['id_genre'] }}" required>
 
         <label for="duration">Durasi (menit):</label>
         <input type="number" name="duration" id="duration" value="{{ $movie['duration'] }}">
@@ -112,12 +112,9 @@
         <label for="description">Deskripsi:</label>
         <textarea name="description" id="description" rows="5" required>{{ $movie['description'] }}</textarea>
 
-        <label for="thumbnail">Thumbnail Saat Ini: <strong>{{ $movie['thumbnail'] }}</strong></label>
-        <select name="thumbnail" id="thumbnail">
-            @foreach ($imageFiles as $image)
-                <option value="{{ $image }}" {{ $image == $movie['thumbnail'] ? 'selected' : '' }}>{{ $image }}</option>
-            @endforeach
-        </select>
+        <label for="images">Gambar</label>
+        <input type="file" name="thumbnail" value="{{ $movie['thumbnail'] }}">
+        <input type="hidden" name="existing_thumbnail" value="{{ $movie['thumbnail'] }}">
 
         <button type="submit">Simpan Perubahan</button>
     </form>

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Response;
 
 class MovieController extends Controller
 {
@@ -37,8 +38,8 @@ class MovieController extends Controller
     {
         $data = $request->validate([
             'title' => 'required|string',
+            'genre' => 'required|string',
             'release_date' => 'required|date',
-            'id_genre' => 'required|integer',
             'description' => 'required|string',
             'image' => 'nullable|file|mimes:jpg,jpeg,png|max:2048',
             'duration' => 'nullable|integer',
@@ -135,16 +136,30 @@ class MovieController extends Controller
     {
         $data = $request->validate([
             'title' => 'required|string',
+            'genre' => 'required|string',
             'release_date' => 'required|date',
-            'id_genre' => 'required|integer',
             'description' => 'required|string',
-            'thumbnail' => 'nullable|string',
+            'images' => 'nullable|file|mimes:jpg,jpeg,png|max:2048',
             'duration' => 'nullable|integer',
         ]);
 
+        // Ambil ID film
         $data['id_movie'] = (int) $id;
 
-        // Kirim data update ke API (PUT atau POST tergantung backend kamu)
+        // Cek apakah user upload gambar baru
+        if ($request->hasFile('images')) {
+            $originalName = $request->file('images')->getClientOriginalName();
+            $extension = $request->file('images')->getClientOriginalExtension();
+            $filename = time() . '_' . Str::slug(pathinfo($originalName, PATHINFO_FILENAME)) . '.' . $extension;
+            $request->file('images')->move(public_path('images'), $filename);
+
+            $data['thumbnail'] = $filename;
+        } else {
+            // Gunakan gambar lama dari input hidden
+            $data['thumbnail'] = $request->input('existing_thumbnail');
+        }
+
+        // Kirim data ke API
         $response = Http::withBody(json_encode($data), 'application/json')
             ->put('http://localhost/project-streamingg/movies.php');
 
@@ -155,4 +170,27 @@ class MovieController extends Controller
         }
     }
 
+    public function searchSuggestions(Request $request)
+    {
+        $keyword = $request->get('search');
+
+        $response = Http::get('http://localhost/project-streamingg/movies.php');
+        if (!$response->successful()) {
+            return response()->json([]);
+        }
+
+        $movies = collect($response->json());
+
+        $filtered = $movies->filter(function ($movie) use ($keyword) {
+            return stripos($movie['title'], $keyword) !== false;
+        })->take(5)->map(function ($movie) {
+            return [
+                'id' => $movie['id_movie'],
+                'title' => $movie['title'],
+                'thumbnail' => $movie['thumbnail'],
+            ];
+        })->values();
+
+        return response()->json($filtered);
+    }
 }
