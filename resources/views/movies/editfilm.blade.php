@@ -116,6 +116,9 @@
         <input type="file" name="thumbnail" value="{{ $movie['thumbnail'] }}">
         <input type="hidden" name="existing_thumbnail" value="{{ $movie['thumbnail'] }}">
 
+        <label for="yt_link">YouTube Link:</label>
+        <input type="text" name="yt_link" id="yt_link" value="{{ $movie['yt_link'] ?? '' }}" required>
+
         <button type="submit">Simpan Perubahan</button>
     </form>
 

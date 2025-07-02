@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\movies;
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
@@ -134,32 +136,29 @@ class MovieController extends Controller
 
     public function update(Request $request, $id)
     {
-        $data = $request->validate([
+        $validated = $request->validate([
             'title' => 'required|string',
             'genre' => 'required|string',
             'release_date' => 'required|date',
             'description' => 'required|string',
             'images' => 'nullable|file|mimes:jpg,jpeg,png|max:2048',
             'duration' => 'nullable|integer',
+            'yt_link' => 'required|string',
         ]);
 
-        // Ambil ID film
+        $data = $validated;
         $data['id_movie'] = (int) $id;
 
-        // Cek apakah user upload gambar baru
         if ($request->hasFile('images')) {
             $originalName = $request->file('images')->getClientOriginalName();
             $extension = $request->file('images')->getClientOriginalExtension();
             $filename = time() . '_' . Str::slug(pathinfo($originalName, PATHINFO_FILENAME)) . '.' . $extension;
             $request->file('images')->move(public_path('images'), $filename);
-
             $data['thumbnail'] = $filename;
         } else {
-            // Gunakan gambar lama dari input hidden
             $data['thumbnail'] = $request->input('existing_thumbnail');
         }
 
-        // Kirim data ke API
         $response = Http::withBody(json_encode($data), 'application/json')
             ->put('http://localhost/project-streamingg/movies.php');
 
@@ -193,4 +192,71 @@ class MovieController extends Controller
 
         return response()->json($filtered);
     }
+
+    public function stream($id)
+    {
+        $response = Http::get('http://localhost/project-streamingg/movies.php');
+        if (!$response->successful()) {
+            return back()->withErrors(['message' => 'Gagal mengambil film.']);
+        }
+
+        $movies = $response->json();
+        $movie = collect($movies)->firstWhere('id_movie', (int) $id);
+        if (!$movie) {
+            return back()->withErrors(['message' => 'Film tidak ditemukan.']);
+        }
+
+        // Ambil review
+        $reviewResponse = Http::get("http://localhost/project-streamingg/reviews.php");
+        $reviews = [];
+
+        if ($reviewResponse->successful()) {
+            $allReviews = $reviewResponse->json();
+            $reviews = collect($allReviews)
+                ->where('id_movie', (int) $movie['id_movie'])
+                ->values()
+                ->all();
+        }
+
+        return view('stream', compact('movie', 'reviews'));
+    }
+
+    public function storeReview(Request $request)
+    {
+        $validated = $request->validate([
+            'id_movie' => 'required|integer',
+            'rating' => 'required|integer|min:1|max:5',
+            'comment' => 'required|string',
+        ]);
+
+        // Jika id_user tetap diperlukan, kamu bisa pakai default:
+        $reviewData = $validated;
+        $reviewData['id_user'] = $request->input('id_user', 0); // default ke 0 jika tidak ada
+        $reviewData['created_at'] = now()->toDateTimeString();
+
+        // Ambil ID terakhir review
+        $response = Http::get('http://localhost/project-streamingg/reviews.php');
+        if (!$response->successful()) {
+            return back()->withErrors(['message' => 'Gagal mengambil review.']);
+        }
+
+        $allReviews = $response->json();
+        $lastId = 0;
+        foreach ($allReviews as $review) {
+            if (isset($review['id_review']) && $review['id_review'] > $lastId) {
+                $lastId = $review['id_review'];
+            }
+        }
+        $reviewData['id_review'] = $lastId + 1;
+
+        // Kirim ke API native
+        $post = Http::post('http://localhost/project-streamingg/reviews.php', $reviewData);
+
+        if ($post->successful()) {
+            return back()->with('success', 'Review berhasil dikirim!');
+        } else {
+            return back()->withErrors(['message' => 'Gagal mengirim review.']);
+        }
+    }
+
 }

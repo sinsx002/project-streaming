@@ -279,7 +279,7 @@
         <h2>Semua Film</h2>
         <div class="movie-grid">
             @foreach ($movies as $movie)
-                <div class="movie-card">
+                <div class="movie-card" onclick="window.location.href='{{ url('/stream/' . $movie['id_movie']) }}'" style="cursor: pointer;">
                     <img src="{{ asset('images/' . basename($movie['thumbnail'])) }}" alt="{{ $movie['title'] }}">
                     <div class="info">
                         <div class="title">{{ $movie['title'] }}</div>
