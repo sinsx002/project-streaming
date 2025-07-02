@@ -207,15 +207,17 @@ class MovieController extends Controller
         }
 
         // Ambil review
-        $reviewResponse = Http::get("http://localhost/project-streamingg/reviews.php");
         $reviews = [];
 
+        $reviewResponse = Http::get("http://localhost/project-streamingg/reviews.php");
         if ($reviewResponse->successful()) {
-            $allReviews = $reviewResponse->json();
-            $reviews = collect($allReviews)
-                ->where('id_movie', (int) $movie['id_movie'])
-                ->values()
-                ->all();
+            $json = $reviewResponse->json();
+            if (is_array($json)) {
+                $reviews = collect($json)
+                    ->where('id_movie', (int) $movie['id_movie'])
+                    ->values()
+                    ->all();
+            }
         }
 
         return view('stream', compact('movie', 'reviews'));

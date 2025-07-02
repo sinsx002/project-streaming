@@ -121,25 +121,28 @@
 
             <hr style="margin: 30px 0; border-color: #333;">
 
-            <h2>Tambah Review</h2>
-                <form method="POST" action="{{ route('reviews.store') }}" style="margin-top: 20px;">
-                    @csrf
-                    <input type="hidden" name="id_user" value="0"> <!-- atau kosongkan saja jika tidak digunakan -->
-                    <input type="hidden" name="id_movie" value="{{ $movie['id_movie'] }}">
+            @php
+                $userId = session('user_id');
+                $movieId = $movie['id_movie'];
+            @endphp
 
-                    <div class="rating-stars" style="margin-bottom: 15px;">
-                        <input type="hidden" name="rating" id="ratingInput" value="0">
-                        @for ($i = 1; $i <= 5; $i++)
-                            <span class="star" data-value="{{ $i }}">&#9733;</span>
-                        @endfor
-                    </div>
+            @csrf
+                <input type="hidden" name="id_user" value="0"> <!-- atau kosongkan saja jika tidak digunakan -->
+                <input type="hidden" name="id_movie" value="{{ $movie['id_movie'] }}">
 
-                    <div style="margin-bottom: 15px;">
-                        <textarea name="comment" rows="4" placeholder="Tulis komentar Anda..." style="width: 100%; padding: 10px; border-radius: 6px; border: none;"></textarea>
-                    </div>
+                <div class="rating-stars" style="margin-bottom: 15px;">
+                    <input type="hidden" name="rating" id="ratingInput" value="0">
+                    @for ($i = 1; $i <= 5; $i++)
+                        <span class="star" data-value="{{ $i }}">&#9733;</span>
+                    @endfor
+                </div>
 
-                    <button type="submit" class="btn-back" style="margin-top: 0;">Kirim Review</button>
-                </form>
+                <div style="margin-bottom: 15px;">
+                    <textarea name="comment" rows="4" placeholder="Tulis komentar Anda..." style="width: 100%; padding: 10px; border-radius: 6px; border: none;"></textarea>
+                </div>
+
+                <button type="submit" class="btn-back" style="margin-top: 0;">Kirim Review</button>
+            </form>
 
             @if($reviews ?? false)
                 <div style="margin-top: 40px;">
@@ -194,6 +197,87 @@
                         star.classList.remove('selected');
                     }
                 });
+            }
+        });
+    </script>
+
+    <h2>Review Anda</h2>
+    <div id="review-container" style="margin-bottom: 30px;">
+        <p style="color: #aaa;">Memuat review Anda...</p>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const container = document.getElementById('review-container');
+
+            fetch(`/review/check/{{ $userId }}/{{ $movieId }}`)
+                .then(res => res.json())
+                .then(data => {
+                    container.innerHTML = '';
+
+                    if (data && data.rating && data.comment) {
+                        container.innerHTML = `
+                            <div class="rating-stars">
+                                ${[1,2,3,4,5].map(i => 
+                                    `<span class="star ${i <= data.rating ? 'selected' : ''}">&#9733;</span>`
+                                ).join('')}
+                            </div>
+                            <p>${data.comment}</p>
+                            <small><em>${new Date(data.created_at).toLocaleString()}</em></small>
+                        `;
+                    } else {
+                        container.innerHTML = `
+                            <form method="POST" action="{{ route('reviews.store') }}">
+                                @csrf
+                                <input type="hidden" name="id_user" value="{{ $userId }}">
+                                <input type="hidden" name="id_movie" value="{{ $movieId }}">
+                                <input type="hidden" name="rating" id="ratingInput" value="0">
+
+                                <div class="rating-stars" style="margin-bottom: 15px;">
+                                    ${[1,2,3,4,5].map(i => 
+                                        `<span class="star" data-value="${i}">&#9733;</span>`
+                                    ).join('')}
+                                </div>
+
+                                <textarea name="comment" rows="4" placeholder="Tulis komentar Anda..." style="width: 100%; padding: 10px; border-radius: 6px; border: none;"></textarea>
+                                <button type="submit" class="btn-back" style="margin-top: 15px;">Kirim Review</button>
+                            </form>
+                        `;
+
+                        // Aktifkan bintang
+                        setupStars();
+                    }
+                });
+
+            function setupStars() {
+                const stars = document.querySelectorAll('.rating-stars .star');
+                const ratingInput = document.getElementById('ratingInput');
+
+                stars.forEach(star => {
+                    star.addEventListener('mouseover', function () {
+                        highlightStars(parseInt(this.dataset.value));
+                    });
+
+                    star.addEventListener('mouseout', function () {
+                        highlightStars(parseInt(ratingInput.value));
+                    });
+
+                    star.addEventListener('click', function () {
+                        const value = parseInt(this.dataset.value);
+                        ratingInput.value = value;
+                        highlightStars(value);
+                    });
+                });
+
+                function highlightStars(count) {
+                    stars.forEach((star, index) => {
+                        if (index < count) {
+                            star.classList.add('selected');
+                        } else {
+                            star.classList.remove('selected');
+                        }
+                    });
+                }
             }
         });
     </script>
