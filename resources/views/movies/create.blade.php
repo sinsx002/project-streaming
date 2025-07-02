@@ -136,7 +136,7 @@
         <input type="file" name="image" accept="image/*">
 
         <label for="video_url">Video YouTube (link):</label>
-        <input type="text" name="video_url" id="video_url" placeholder="https://youtu.be/5qVQxw5Hbvk?si=Yfay4y5yPdg0WK1L" required>
+        <input type="text" name="video_url" id="video_url" placeholder="https://youtu.be/5qVQxw5Hbvk?si=u3srty0DngqOgfpp" required>
 
 
         <button type="submit">Simpan</button>
