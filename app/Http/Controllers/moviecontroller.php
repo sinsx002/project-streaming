@@ -2,12 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\movies;
-
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Response;
 
 class MovieController extends Controller
 {
@@ -15,18 +12,16 @@ class MovieController extends Controller
     {
         $response = Http::get('http://localhost/project-streamingg/movies.php');
         $movies = $response->json();
-
         return view('movies.index', compact('movies'));
     }
 
     public function create()
     {
         $imageFiles = [];
-
         $imageDir = public_path('images');
+
         if (is_dir($imageDir)) {
-            $files = scandir($imageDir);
-            foreach ($files as $file) {
+            foreach (scandir($imageDir) as $file) {
                 if (in_array(pathinfo($file, PATHINFO_EXTENSION), ['jpg', 'jpeg', 'png'])) {
                     $imageFiles[] = $file;
                 }
@@ -45,47 +40,28 @@ class MovieController extends Controller
             'description' => 'required|string',
             'image' => 'nullable|file|mimes:jpg,jpeg,png|max:2048',
             'duration' => 'nullable|integer',
+            'yt_link' => 'required|string',
         ]);
 
         if ($request->hasFile('image')) {
-            $originalName = $request->file('image')->getClientOriginalName();
-            $extension = $request->file('image')->getClientOriginalExtension();
-            $filename = time() . '_' . Str::slug(pathinfo($originalName, PATHINFO_FILENAME)) . '.' . $extension;
-
-            $request->file('image')->move(public_path('images'), $filename);
-
-            // Masukkan nama file sebagai thumbnail
+            $filename = time() . '_' . Str::slug(pathinfo($request->image->getClientOriginalName(), PATHINFO_FILENAME)) . '.' . $request->image->getClientOriginalExtension();
+            $request->image->move(public_path('images'), $filename);
             $data['thumbnail'] = $filename;
         } else {
             $data['thumbnail'] = null;
         }
 
-        // Ambil ID terakhir dari API untuk generate ID baru
-        $getResponse = Http::get('http://localhost/project-streamingg/movies.php');
-        if ($getResponse->successful()) {
-            $movies = $getResponse->json();
-            $lastId = 0;
-            foreach ($movies as $movie) {
-                if (isset($movie['id_movie']) && $movie['id_movie'] > $lastId) {
-                    $lastId = $movie['id_movie'];
-                }
-            }
-            $data['id_movie'] = $lastId + 1;
-        } else {
-            return back()->withErrors(['message' => 'Gagal mengambil ID terakhir film.']);
-        }
+        $response = Http::get('http://localhost/project-streamingg/movies.php');
+        $lastId = collect($response->json())->max('id_movie') ?? 0;
+        $data['id_movie'] = $lastId + 1;
 
-        // Kirim data ke API
-        $postResponse = Http::post('http://localhost/project-streamingg/movies.php', $data);
-
-        if ($postResponse->successful()) {
-            return redirect('/dashboard/movies')->with('success', 'Film berhasil ditambahkan!');
-        } else {
-            return back()->withErrors(['message' => 'Gagal menambahkan film.']);
-        }
+        $post = Http::post('http://localhost/project-streamingg/movies.php', $data);
+        return $post->successful()
+            ? redirect('/dashboard/movies')->with('success', 'Film berhasil ditambahkan!')
+            : back()->withErrors(['message' => 'Gagal menambahkan film.']);
     }
 
-        public function edit()
+    public function edit()
     {
         $response = Http::get('http://localhost/project-streamingg/movies.php');
         $movies = $response->json();
@@ -94,37 +70,24 @@ class MovieController extends Controller
 
     public function destroy($id)
     {
-        $response = Http::withBody(json_encode(['id_movie' => (int) $id]), 'application/json')
+        $delete = Http::withBody(json_encode(['id_movie' => (int)$id]), 'application/json')
             ->delete('http://localhost/project-streamingg/movies.php');
 
-        if ($response->successful()) {
-            return redirect('/dashboard/movies/edit')->with('success', 'Film berhasil dihapus!');
-        } else {
-            return back()->withErrors(['message' => 'Gagal menghapus film.']);
-        }
+        return $delete->successful()
+            ? redirect('/dashboard/movies/edit')->with('success', 'Film berhasil dihapus!')
+            : back()->withErrors(['message' => 'Gagal menghapus film.']);
     }
 
     public function editFilm($id)
     {
-        // Ambil semua film dari API
         $response = Http::get('http://localhost/project-streamingg/movies.php');
-        if (!$response->successful()) {
-            return back()->withErrors(['message' => 'Gagal mengambil data film.']);
-        }
-
         $movies = $response->json();
-        $movie = collect($movies)->firstWhere('id_movie', (int) $id);
+        $movie = collect($movies)->firstWhere('id_movie', (int)$id);
 
-        if (!$movie) {
-            return back()->withErrors(['message' => 'Film tidak ditemukan.']);
-        }
-
-        // Ambil semua gambar dari direktori /public/images
         $imageFiles = [];
         $imageDir = public_path('images');
         if (is_dir($imageDir)) {
-            $files = scandir($imageDir);
-            foreach ($files as $file) {
+            foreach (scandir($imageDir) as $file) {
                 if (in_array(pathinfo($file, PATHINFO_EXTENSION), ['jpg', 'jpeg', 'png'])) {
                     $imageFiles[] = $file;
                 }
@@ -146,74 +109,34 @@ class MovieController extends Controller
             'yt_link' => 'required|string',
         ]);
 
-        $data = $validated;
-        $data['id_movie'] = (int) $id;
+        $validated['id_movie'] = (int)$id;
 
         if ($request->hasFile('images')) {
-            $originalName = $request->file('images')->getClientOriginalName();
-            $extension = $request->file('images')->getClientOriginalExtension();
-            $filename = time() . '_' . Str::slug(pathinfo($originalName, PATHINFO_FILENAME)) . '.' . $extension;
-            $request->file('images')->move(public_path('images'), $filename);
-            $data['thumbnail'] = $filename;
+            $filename = time() . '_' . Str::slug(pathinfo($request->images->getClientOriginalName(), PATHINFO_FILENAME)) . '.' . $request->images->getClientOriginalExtension();
+            $request->images->move(public_path('images'), $filename);
+            $validated['thumbnail'] = $filename;
         } else {
-            $data['thumbnail'] = $request->input('existing_thumbnail');
+            $validated['thumbnail'] = $request->input('existing_thumbnail');
         }
 
-        $response = Http::withBody(json_encode($data), 'application/json')
+        $update = Http::withBody(json_encode($validated), 'application/json')
             ->put('http://localhost/project-streamingg/movies.php');
 
-        if ($response->successful()) {
-            return redirect('/dashboard/movies/edit')->with('success', 'Film berhasil diperbarui!');
-        } else {
-            return back()->withErrors(['message' => 'Gagal memperbarui film.']);
-        }
-    }
-
-    public function searchSuggestions(Request $request)
-    {
-        $keyword = $request->get('search');
-
-        $response = Http::get('http://localhost/project-streamingg/movies.php');
-        if (!$response->successful()) {
-            return response()->json([]);
-        }
-
-        $movies = collect($response->json());
-
-        $filtered = $movies->filter(function ($movie) use ($keyword) {
-            return stripos($movie['title'], $keyword) !== false;
-        })->take(5)->map(function ($movie) {
-            return [
-                'id' => $movie['id_movie'],
-                'title' => $movie['title'],
-                'thumbnail' => $movie['thumbnail'],
-            ];
-        })->values();
-
-        return response()->json($filtered);
+        return $update->successful()
+            ? redirect('/dashboard/movies/edit')->with('success', 'Film berhasil diperbarui!')
+            : back()->withErrors(['message' => 'Gagal memperbarui film.']);
     }
 
     public function stream($id)
     {
-        $response = Http::get('http://localhost/project-streamingg/movies.php');
-        if (!$response->successful()) {
-            return back()->withErrors(['message' => 'Gagal mengambil film.']);
-        }
+        $movieRes = Http::get('http://localhost/project-streamingg/movies.php');
+        $movie = collect($movieRes->json())->firstWhere('id_movie', (int)$id);
 
-        $movies = $response->json();
-        $movie = collect($movies)->firstWhere('id_movie', (int) $id);
-        if (!$movie) {
-            return back()->withErrors(['message' => 'Film tidak ditemukan.']);
-        }
-
-        // Ambil review
-        $reviewResponse = Http::get("http://localhost/project-streamingg/reviews.php");
         $reviews = [];
-
-        if ($reviewResponse->successful()) {
-            $allReviews = $reviewResponse->json();
-            $reviews = collect($allReviews)
-                ->where('id_movie', (int) $movie['id_movie'])
+        $reviewRes = Http::get('http://localhost/project-streamingg/reviews.php');
+        if ($reviewRes->successful()) {
+            $reviews = collect($reviewRes->json())
+                ->where('id_movie', (int)$id)
                 ->values()
                 ->all();
         }
@@ -229,34 +152,17 @@ class MovieController extends Controller
             'comment' => 'required|string',
         ]);
 
-        // Jika id_user tetap diperlukan, kamu bisa pakai default:
         $reviewData = $validated;
-        $reviewData['id_user'] = $request->input('id_user', 0); // default ke 0 jika tidak ada
+        $reviewData['id_user'] = $request->input('id_user', 0);
         $reviewData['created_at'] = now()->toDateTimeString();
 
-        // Ambil ID terakhir review
-        $response = Http::get('http://localhost/project-streamingg/reviews.php');
-        if (!$response->successful()) {
-            return back()->withErrors(['message' => 'Gagal mengambil review.']);
-        }
+        $res = Http::get('http://localhost/project-streamingg/reviews.php');
+        $all = $res->successful() ? $res->json() : [];
+        $reviewData['id_review'] = collect($all)->max('id_review') + 1;
 
-        $allReviews = $response->json();
-        $lastId = 0;
-        foreach ($allReviews as $review) {
-            if (isset($review['id_review']) && $review['id_review'] > $lastId) {
-                $lastId = $review['id_review'];
-            }
-        }
-        $reviewData['id_review'] = $lastId + 1;
-
-        // Kirim ke API native
         $post = Http::post('http://localhost/project-streamingg/reviews.php', $reviewData);
-
-        if ($post->successful()) {
-            return back()->with('success', 'Review berhasil dikirim!');
-        } else {
-            return back()->withErrors(['message' => 'Gagal mengirim review.']);
-        }
+        return $post->successful()
+            ? back()->with('success', 'Review berhasil dikirim!')
+            : back()->withErrors(['message' => 'Gagal mengirim review.']);
     }
-
 }
