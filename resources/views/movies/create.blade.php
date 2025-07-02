@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>Tambah Film</title>
     <style>
@@ -12,11 +13,13 @@
             flex-direction: column;
             align-items: center;
         }
+
         h2 {
             font-size: 32px;
             color: red;
             margin-bottom: 30px;
         }
+
         form {
             max-width: 600px;
             width: 100%;
@@ -29,11 +32,13 @@
             grid-gap: 15px;
             align-items: center;
         }
+
         label {
             font-weight: bold;
             color: #ccc;
             margin-bottom: 0;
         }
+
         input[type="text"],
         input[type="date"],
         input[type="number"],
@@ -48,10 +53,12 @@
             border-radius: 6px;
             font-size: 15px;
         }
+
         textarea {
             resize: vertical;
             grid-column: span 1;
         }
+
         button {
             grid-column: span 2;
             margin-top: 25px;
@@ -64,9 +71,11 @@
             font-size: 16px;
             transition: background-color 0.3s;
         }
+
         button:hover {
             background-color: #e60000;
         }
+
         .alert-danger {
             background: #722;
             padding: 15px;
@@ -74,10 +83,12 @@
             border-radius: 8px;
             grid-column: span 2;
         }
+
         .alert-danger ul {
             margin: 0;
             padding-left: 20px;
         }
+
         .back-link {
             margin-top: 20px;
             color: white;
@@ -87,11 +98,13 @@
             padding: 10px 20px;
             border-radius: 6px;
         }
+
         .back-link:hover {
             background-color: #666;
         }
     </style>
 </head>
+
 <body>
     <h2>Tambah Film Baru</h2>
 
@@ -122,9 +135,14 @@
         <label for="image">Gambar</label>
         <input type="file" name="image" accept="image/*">
 
+        <label for="video_url">Video YouTube (link):</label>
+        <input type="text" name="video_url" id="video_url" placeholder="https://youtu.be/5qVQxw5Hbvk?si=Yfay4y5yPdg0WK1L" required>
+
+
         <button type="submit">Simpan</button>
     </form>
 
     <a class="back-link" href="{{ url('/dashboard/movies') }}">&larr; Kembali ke Dashboard</a>
 </body>
+
 </html>
