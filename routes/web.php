@@ -39,3 +39,4 @@ Route::get('/dashboard/movies/search-suggestions', [MovieController::class, 'sea
 Route::get('/stream/{id}', [MovieController::class, 'stream'])->name('movie.stream');
 
 Route::post('/reviews/store', [MovieController::class, 'storeReview'])->name('reviews.store');
+Route::get('/review/check/{userId}/{movieId}', [ReviewController::class, 'checkReview']);
