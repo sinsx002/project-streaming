@@ -79,13 +79,19 @@
             margin-bottom: 12px;
         }
 
+
         .rating-stars .star {
             display: inline-block;
         }
 
+        .rating-stars .star.selected,
+        .rating-stars .star:hover,
+        .rating-stars .star.hover {
+
         .rating-stars .star.selected {
             color: #ffcc00;
         }
+
 
         textarea {
             width: 100%;
@@ -107,6 +113,7 @@
                 height: 50vh;
             }
         }
+        }
     </style>
 </head>
 <body>
@@ -122,6 +129,30 @@
                 <p>{{ $movie['description'] }}</p>
             </div>
 
+            <hr style="margin: 30px 0; border-color: #333;">
+
+            <!-- Form Review -->
+            <div>
+                <h3>Tulis Review:</h3>
+                <form method="POST" action="{{ route('reviews.store') }}">
+                    @csrf
+                    <input type="hidden" name="id_user" value="{{ session('user_id') ?? 0 }}">
+                    <input type="hidden" name="id_movie" value="{{ $movie['id_movie'] }}">
+                    <input type="hidden" name="rating" id="ratingInput" value="0">
+
+                    <div class="rating-stars" style="margin-bottom: 15px;">
+                        @for ($i = 1; $i <= 5; $i++)
+                            <span class="star" data-value="{{ $i }}">&#9733;</span>
+                        @endfor
+                    </div>
+
+                    <div style="margin-bottom: 15px;">
+                        <textarea name="comment" rows="4" placeholder="Tulis komentar Anda..." style="width: 100%; padding: 10px; border-radius: 6px; border: none;"></textarea>
+                    </div>
+
+                    <button type="submit" class="btn-back" style="margin-top: 0;">Kirim Review</button>
+                </form>
+            </div>
             <hr style="margin: 20px 0; border-color: #444;">
 
             <hr class="my-4">
@@ -170,6 +201,7 @@
 
             <hr style="margin: 20px 0; border-color: #444;">
 
+            <!-- Review Pengguna -->
             @if($reviews ?? false)
                 <div>
                     <h3>Review Pengguna Lain:</h3>
@@ -211,6 +243,7 @@
                 });
 
                 star.addEventListener('mouseover', function () {
+                    highlightStars(parseInt(this.dataset.value));
                     highlightFormStars(parseInt(this.dataset.value));
                 });
 
@@ -219,6 +252,18 @@
                 });
             });
 
+            function highlightStars(count) {
+                stars.forEach((star, index) => {
+                    if (index < count) {
+                        star.classList.add('selected');
+                    } else {
+                        star.classList.remove('selected');
+                    }
+                });
+            }
+        });
+    </script>
+</body>
             function updateFormStars() {
                 starElements.forEach(star => {
                     star.classList.toggle('selected', parseInt(star.dataset.value) <= selectedRating);
