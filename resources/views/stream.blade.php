@@ -124,6 +124,36 @@
 
             <hr style="margin: 20px 0; border-color: #444;">
 
+            <hr class="my-4">
+
+<h3 class="text-xl font-semibold mb-3">Ulasan Pengguna</h3>
+
+        @if (count($reviews) > 0)
+            <div class="space-y-4">
+                @foreach ($reviews as $review)
+                    <div class="border p-3 rounded shadow-sm">
+                        <div class="flex justify-between items-center mb-1">
+                            <strong>User ID: {{ $review['id_user'] }}</strong>
+                            <span class="text-sm text-gray-500">{{ $review['created_at'] ?? 'Waktu tidak tersedia' }}</span>
+                        </div>
+                        <div class="text-yellow-500">
+                            Rating:
+                            @for ($i = 1; $i <= 5; $i++)
+                                @if ($i <= $review['rating'])
+                                    ★
+                                @else
+                                    ☆
+                                @endif
+                            @endfor
+                        </div>
+                        <p class="mt-1">{{ $review['comment'] }}</p>
+                    </div>
+                @endforeach
+            </div>
+        @else
+            <p class="text-gray-600">Belum ada ulasan untuk film ini.</p>
+        @endif
+
             <!-- Review Form -->
             <form method="POST" action="{{ route('storeReview') }}">
                 @csrf
@@ -145,6 +175,9 @@
                     <h3>Review Pengguna Lain:</h3>
                     @forelse ($reviews as $review)
                         <div style="margin-bottom: 20px; border-bottom: 1px solid #444; padding-bottom: 10px;">
+                            <strong style="color: #ff4c4c;">
+                                {{ $review['username'] ?? 'Pengguna Anonim' }}
+                            </strong>
                             <div class="rating-stars">
                                 @for ($i = 1; $i <= 5; $i++)
                                     <span class="star {{ $i <= $review['rating'] ? 'selected' : '' }}">&#9733;</span>

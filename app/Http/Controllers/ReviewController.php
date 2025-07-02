@@ -7,43 +7,47 @@ use Illuminate\Support\Facades\Http;
 
 class ReviewController extends Controller
 {
-    public function checkReview($userId, $movieId)
-    {
-        // Ambil semua review dari API
-        $response = Http::get('http://localhost/project-streamingg/reviews.php');
-        $allReviews = $response->json();
-
-        // Cari review spesifik
-        $review = null;
-        if (is_array($allReviews)) {
-            foreach ($allReviews as $item) {
-                if ($item['id_user'] == $userId && $item['id_movie'] == $movieId) {
-                    $review = $item;
-                    break;
-                }
-            }
-        }
-
-        return response()->json($review);
-    }
-
+    // Menyimpan review baru
     public function store(Request $request)
     {
-        $reviewData = [
-            'id_review' => time(), // atau gunakan uniqid()
-            'id_user' => (int) $request->input('id_user'),
-            'id_movie' => (int) $request->input('id_movie'),
-            'rating' => (int) $request->input('rating'),
-            'comment' => $request->input('comment'),
-            'created_at' => now()->format('Y-m-d H:i:s'),
-        ];
+        $request->validate([
+            'id_movie' => 'required',
+            'rating' => 'required|integer|min:1|max:5',
+            'comment' => 'required|string',
+        ]);
 
-        $response = Http::post('http://localhost/project-streamingg/reviews.php', $reviewData);
+        // Ambil ID user dari session
+        $id_user = session('user.id_user');
+
+        // Kirim ke API PHP native
+        $response = Http::post('http://localhost/project-streamingg/reviews.php', [
+            'id_user' => $id_user,
+            'id_movie' => $request->input('id_movie'),
+            'rating' => $request->input('rating'),
+            'comment' => $request->input('comment'),
+            'created_at' => now()->toDateTimeString(),
+        ]);
 
         if ($response->successful()) {
-            return redirect()->back()->with('success', 'Review berhasil dikirim!');
+            return back()->with('success', 'Review berhasil dikirim.');
+        } else {
+            return back()->with('error', 'Gagal mengirim review.');
+        }
+    }
+
+    // Mengecek apakah user sudah review film ini
+    public function checkReview($userId, $movieId)
+    {
+        $response = Http::get("http://localhost/project-streamingg/reviews.php", [
+            'id_user' => $userId,
+            'id_movie' => $movieId,
+        ]);
+
+        if ($response->successful()) {
+            $reviews = $response->json();
+            return response()->json(['exists' => count($reviews) > 0]);
         }
 
-        return redirect()->back()->with('error', 'Gagal mengirim review.');
+        return response()->json(['exists' => false], 500);
     }
 }

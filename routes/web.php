@@ -41,4 +41,4 @@ Route::post('/reviews', [ReviewController::class, 'store']);
 Route::get('/review/check/{userId}/{movieId}', [ReviewController::class, 'checkReview']);
 
 Route::get('/stream/{id}', [MovieController::class, 'stream']);
-Route::post('/review', [MovieController::class, 'storeReview'])->name('storeReview');
+Route::post('/reviews/store', [ReviewController::class, 'store'])->name('storeReview');

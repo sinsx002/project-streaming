@@ -45,7 +45,6 @@ class AuthController extends Controller
 
         if ($admin && $this->checkPassword($credentials['password'], $admin['password'])) {
             session(['user' => $admin, 'role' => 'admin']);
-            session(['user_id' => $user->id_user]); // atau id_admin jika admin
             $request->session()->regenerate();
             return redirect()->intended('/dashboard/movies');
         }
