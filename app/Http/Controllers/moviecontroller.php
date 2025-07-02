@@ -197,7 +197,7 @@ class MovieController extends Controller
     {
         $response = Http::get('http://localhost/project-streamingg/movies.php');
         if (!$response->successful()) {
-            return back()->withErrors(['message' => 'Gagal mengambil film.']);
+            return back()->withErrors(['message' => 'Gagal mengambil data film.']);
         }
 
         $movies = $response->json();
@@ -206,21 +206,21 @@ class MovieController extends Controller
             return back()->withErrors(['message' => 'Film tidak ditemukan.']);
         }
 
-        // Ambil review
-        $reviews = [];
+        $reviewResponse = Http::get('http://localhost/project-streamingg/reviews.php');
+        $allReviews = $reviewResponse->json();
 
-        $reviewResponse = Http::get("http://localhost/project-streamingg/reviews.php");
-        if ($reviewResponse->successful()) {
-            $json = $reviewResponse->json();
-            if (is_array($json)) {
-                $reviews = collect($json)
-                    ->where('id_movie', (int) $movie['id_movie'])
-                    ->values()
-                    ->all();
-            }
+        // Validasi agar tidak error saat $allReviews bukan array
+        $filteredReviews = [];
+        if (is_array($allReviews)) {
+            $filteredReviews = array_filter($allReviews, function ($review) use ($id) {
+                return $review['id_movie'] == $id;
+            });
         }
 
-        return view('stream', compact('movie', 'reviews'));
+        return view('stream', [
+            'movie' => $movie,
+            'reviews' => $filteredReviews
+        ]);
     }
 
     public function storeReview(Request $request)
@@ -244,11 +244,17 @@ class MovieController extends Controller
 
         $allReviews = $response->json();
         $lastId = 0;
-        foreach ($allReviews as $review) {
-            if (isset($review['id_review']) && $review['id_review'] > $lastId) {
-                $lastId = $review['id_review'];
+
+        if (is_array($allReviews)) {
+            foreach ($allReviews as $review) {
+                if (isset($review['id_review']) && $review['id_review'] > $lastId) {
+                    $lastId = $review['id_review'];
+                }
             }
+        } else {
+            return back()->withErrors(['message' => 'Data review tidak valid dari API.']);
         }
+
         $reviewData['id_review'] = $lastId + 1;
 
         // Kirim ke API native

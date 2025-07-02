@@ -26,4 +26,24 @@ class ReviewController extends Controller
 
         return response()->json($review);
     }
+
+    public function store(Request $request)
+    {
+        $reviewData = [
+            'id_review' => time(), // atau gunakan uniqid()
+            'id_user' => (int) $request->input('id_user'),
+            'id_movie' => (int) $request->input('id_movie'),
+            'rating' => (int) $request->input('rating'),
+            'comment' => $request->input('comment'),
+            'created_at' => now()->format('Y-m-d H:i:s'),
+        ];
+
+        $response = Http::post('http://localhost/project-streamingg/reviews.php', $reviewData);
+
+        if ($response->successful()) {
+            return redirect()->back()->with('success', 'Review berhasil dikirim!');
+        }
+
+        return redirect()->back()->with('error', 'Gagal mengirim review.');
+    }
 }
