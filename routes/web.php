@@ -22,12 +22,15 @@ Route::delete('/dashboard/movies/{id}', [MovieController::class, 'destroy']);
 Route::get('/dashboard/movies/{id}/edit', [MovieController::class, 'editFilm']);
 Route::put('/dashboard/movies/{id}', [MovieController::class, 'update']);
 Route::post('/reviews/store', [MovieController::class, 'storeReview'])->name('reviews.store');
+Route::post('/stream/review', [MovieController::class, 'storeReview'])->name('reviews.store');
+
 // === Account Routes (user) ===
 Route::middleware(['check.user'])->group(function () {
     Route::get('/account', [AccountController::class, 'show'])->name('account.profile');
     Route::get('/account/edit', [AccountController::class, 'edit'])->name('account.edit');
     Route::put('/account/update', [AccountController::class, 'update'])->name('account.update');
     Route::post('/account/delete', [AccountController::class, 'destroy'])->name('account.destroy');
+    Route::get('/dashboard/history', [MovieController::class, 'watchHistory'])->name('watch.history');
 });
 
 // === Admin User Management ===
@@ -37,5 +40,3 @@ Route::delete('/admin/users/{id_user}', [AccountController::class, 'adminDestroy
 Route::get('/dashboard/movies/search-suggestions', [MovieController::class, 'searchSuggestions']);
 
 Route::get('/stream/{id}', [MovieController::class, 'stream'])->name('movie.stream');
-
-

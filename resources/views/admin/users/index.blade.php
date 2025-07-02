@@ -116,6 +116,10 @@
 
     <div class="header-buttons">
         <a href="/dashboard/movies">Back to Dashboard</a>
+        <a href="{{ route('watch.history') }}" class="btn btn-primary" style="position: absolute; top: 20px; right: 180px;">
+    Lihat Riwayat Tontonan
+</a>
+
     </div>
 
     @if(session('success'))

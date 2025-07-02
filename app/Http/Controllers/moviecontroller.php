@@ -136,17 +136,35 @@ class MovieController extends Controller
             return back()->withErrors(['message' => 'Film tidak ditemukan.']);
         }
 
-        $reviews = [];
         $reviewRes = Http::get('http://localhost/project-streamingg/reviews.php');
+        $userRes = Http::get('http://localhost/project-streamingg/users.php');
+
+        $users = $userRes->successful() ? collect($userRes->json())->keyBy('id_user') : collect();
+        $reviews = [];
+
         if ($reviewRes->successful()) {
-            $json = $reviewRes->json();
-            if (is_array($json)) {
-                $reviews = collect($json)
-                    ->where('id_movie', (int) $movie['id_movie'])
-                    ->values()
-                    ->all();
-            }
+            $allReviews = collect($reviewRes->json())
+                ->where('id_movie', (int)$id)
+                ->map(function ($review) use ($users) {
+                    $user = $users->get($review['id_user']);
+                    $review['user_name'] = $user['username'] ?? 'User';
+                    return $review;
+                })
+                ->values()
+                ->all();
+            $reviews = $allReviews;
         }
+        // Tambahkan riwayat tontonan
+        if (session()->has('user_id')) {
+            $watchData = [
+                'id_user' => session('user_id'),
+                'id_movie' => $movie['id_movie'],
+                'watched_at' => now()->toDateTimeString(),
+            ];
+
+            Http::post('http://localhost/project-streamingg/watch_history.php', $watchData);
+        }
+
 
         return view('stream', compact('movie', 'reviews'));
     }
@@ -155,21 +173,48 @@ class MovieController extends Controller
     {
         $validated = $request->validate([
             'id_movie' => 'required|integer',
+            'id_user' => 'required|integer',
             'rating' => 'required|integer|min:1|max:5',
             'comment' => 'required|string',
         ]);
 
-        $reviewData = $validated;
-        $reviewData['id_user'] = $request->input('id_user', 0);
-        $reviewData['created_at'] = now()->toDateTimeString();
-
         $res = Http::get('http://localhost/project-streamingg/reviews.php');
-        $all = $res->successful() ? $res->json() : [];
-        $reviewData['id_review'] = collect($all)->max('id_review') + 1;
+        $allReviews = $res->successful() ? $res->json() : [];
+        $validated['id_review'] = collect($allReviews)->max('id_review') + 1;
+        $validated['created_at'] = now()->toDateTimeString();
 
-        $post = Http::post('http://localhost/project-streamingg/reviews.php', $reviewData);
+        $post = Http::post('http://localhost/project-streamingg/reviews.php', $validated);
+
         return $post->successful()
             ? back()->with('success', 'Review berhasil dikirim!')
             : back()->withErrors(['message' => 'Gagal mengirim review.']);
     }
+    public function watchHistory()
+{
+    $userId = session('user_id', 0); // Ganti sesuai session login kamu
+    if (!$userId) {
+        return redirect('/login')->withErrors(['message' => 'Silakan login terlebih dahulu']);
+    }
+
+    // Ambil data watch history user dari API
+    $response = Http::get('http://localhost/project-streamingg/watch_history.php?id_user=' . $userId);
+    $watchHistory = $response->successful() ? $response->json() : [];
+
+    // Ambil semua data film
+    $moviesResponse = Http::get('http://localhost/project-streamingg/movies.php');
+    $movies = $moviesResponse->successful() ? collect($moviesResponse->json())->keyBy('id_movie') : collect();
+
+    // Gabungkan dengan data film
+    $historyWithMovie = collect($watchHistory)->map(function ($item) use ($movies) {
+        $movie = $movies->get($item['id_movie']);
+        return [
+            'title' => $movie['title'] ?? 'Film tidak ditemukan',
+            'watched_at' => $item['watched_at'],
+            'movie_id' => $item['id_movie'],
+        ];
+    });
+
+    return view('movies.history', compact('historyWithMovie'));
+}
+
 }
