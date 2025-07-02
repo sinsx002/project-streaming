@@ -284,7 +284,7 @@
                     <div class="info">
                         <div class="title">{{ $movie['title'] }}</div>
                         <div class="release">Rilis: {{ $movie['release_date'] }}</div>
-                        <div class="genre">Genre: {{ $movie['genre'] }}</div>
+                        <div class="genres">Genre: {{ $movie['genre'] }}</div>
                         <div class="duration">Durasi: {{ isset($movie['duration']) ? $movie['duration'] . 'm' : 'N/A' }}</div>
                         <div class="description">{{ $movie['description'] }}</div>
                     </div>

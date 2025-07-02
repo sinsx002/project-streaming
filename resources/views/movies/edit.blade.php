@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>Edit Daftar Film</title>
     <style>
@@ -12,11 +13,13 @@
             flex-direction: column;
             align-items: center;
         }
+
         h2 {
             font-size: 32px;
             color: red;
             margin-bottom: 20px;
         }
+
         .back-button {
             background-color: gray;
             padding: 10px 20px;
@@ -26,9 +29,11 @@
             font-weight: bold;
             margin-bottom: 20px;
         }
+
         .back-button:hover {
             background-color: #555;
         }
+
         table {
             width: 100%;
             max-width: 1000px;
@@ -38,21 +43,27 @@
             border-radius: 10px;
             overflow: hidden;
         }
-        th, td {
+
+        th,
+        td {
             padding: 12px 16px;
             border: 1px solid #444;
             text-align: left;
             font-size: 14px;
         }
+
         th {
             background-color: #333;
             font-size: 15px;
             color: #f0f0f0;
         }
+
         td {
             background-color: #2a2a2a;
         }
-        a, button {
+
+        a,
+        button {
             background-color: red;
             color: white;
             border: none;
@@ -63,19 +74,24 @@
             font-size: 14px;
             margin: 2px;
         }
-        a:hover, button:hover {
+
+        a:hover,
+        button:hover {
             background-color: #e60000;
         }
+
         .success-message {
             color: limegreen;
             margin-bottom: 15px;
             font-weight: bold;
         }
+
         .delete-form {
             display: inline-block;
         }
     </style>
 </head>
+
 <body>
     <h2>Daftar Film</h2>
 
@@ -108,7 +124,12 @@
                     <td>{{ $movie['thumbnail'] ?? '-' }}</td>
                     <td>
                         <a href="{{ url('/dashboard/movies/' . $movie['id_movie'] . '/edit') }}">Edit</a>
-                        <form action="{{ url('/dashboard/movies/' . $movie['id_movie']) }}" method="POST" class="delete-form" onsubmit="return confirm('Apakah Anda yakin ingin menghapus film ini?');">
+                        <form action="{{ url('/dashboard/movies/' . $movie['id_movie']) }}" method="POST"
+                            class="delete-form" onsubmit="return confirm('Apakah Anda yakin ingin menghapus film ini?');">
+                            <label for="video_url">Link YouTube</label>
+                            <input type="text" name="video_url" id="video_url" value="{{ $movie['video_url'] ?? '' }}"
+                                required>
+
                             @csrf
                             @method('DELETE')
                             <button type="submit">Hapus</button>
@@ -119,4 +140,5 @@
         </tbody>
     </table>
 </body>
+
 </html>
