@@ -21,7 +21,7 @@ Route::get('/dashboard/movies/edit', [MovieController::class, 'edit']);
 Route::delete('/dashboard/movies/{id}', [MovieController::class, 'destroy']);
 Route::get('/dashboard/movies/{id}/edit', [MovieController::class, 'editFilm']);
 Route::put('/dashboard/movies/{id}', [MovieController::class, 'update']);
-Route::post('/review/store', [moviecontroller::class, 'storeReview'])->name('review.store');
+Route::post('/reviews/store', [MovieController::class, 'storeReview'])->name('reviews.store');
 // === Account Routes (user) ===
 Route::middleware(['check.user'])->group(function () {
     Route::get('/account', [AccountController::class, 'show'])->name('account.profile');
@@ -38,5 +38,4 @@ Route::get('/dashboard/movies/search-suggestions', [MovieController::class, 'sea
 
 Route::get('/stream/{id}', [MovieController::class, 'stream'])->name('movie.stream');
 
-Route::post('/reviews/store', [MovieController::class, 'storeReview'])->name('reviews.store');
-Route::get('/review/check/{userId}/{movieId}', [ReviewController::class, 'checkReview']);
+

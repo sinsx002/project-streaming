@@ -132,13 +132,20 @@ class MovieController extends Controller
         $movieRes = Http::get('http://localhost/project-streamingg/movies.php');
         $movie = collect($movieRes->json())->firstWhere('id_movie', (int)$id);
 
+        if (!$movie) {
+            return back()->withErrors(['message' => 'Film tidak ditemukan.']);
+        }
+
         $reviews = [];
         $reviewRes = Http::get('http://localhost/project-streamingg/reviews.php');
         if ($reviewRes->successful()) {
-            $reviews = collect($reviewRes->json())
-                ->where('id_movie', (int)$id)
-                ->values()
-                ->all();
+            $json = $reviewRes->json();
+            if (is_array($json)) {
+                $reviews = collect($json)
+                    ->where('id_movie', (int) $movie['id_movie'])
+                    ->values()
+                    ->all();
+            }
         }
 
         return view('stream', compact('movie', 'reviews'));
