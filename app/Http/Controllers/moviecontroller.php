@@ -167,6 +167,32 @@ class MovieController extends Controller
 
 
         return view('stream', compact('movie', 'reviews'));
+        $response = Http::get('http://localhost/project-streamingg/movies.php');
+        if (!$response->successful()) {
+            return back()->withErrors(['message' => 'Gagal mengambil data film.']);
+        }
+
+        $movies = $response->json();
+        $movie = collect($movies)->firstWhere('id_movie', (int) $id);
+        if (!$movie) {
+            return back()->withErrors(['message' => 'Film tidak ditemukan.']);
+        }
+
+        $reviewResponse = Http::get('http://localhost/project-streamingg/reviews.php');
+        $allReviews = $reviewResponse->json();
+
+        // Validasi agar tidak error saat $allReviews bukan array
+        $filteredReviews = [];
+        if (is_array($allReviews)) {
+            $filteredReviews = array_filter($allReviews, function ($review) use ($id) {
+                return $review['id_movie'] == $id;
+            });
+        }
+
+        return view('stream', [
+            'movie' => $movie,
+            'reviews' => $filteredReviews
+        ]);
     }
 
     public function storeReview(Request $request)
@@ -183,8 +209,7 @@ class MovieController extends Controller
         $validated['id_review'] = collect($allReviews)->max('id_review') + 1;
         $validated['created_at'] = now()->toDateTimeString();
 
-        $post = Http::post('http://localhost/project-streamingg/reviews.php', $validated);
-
+        $post = Http::post('http://localhost/project-streamingg/reviews.php', $reviewData);
         return $post->successful()
             ? back()->with('success', 'Review berhasil dikirim!')
             : back()->withErrors(['message' => 'Gagal mengirim review.']);

@@ -5,6 +5,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\MovieController;
 use App\Http\Controllers\AccountController;
+use App\Http\Controllers\ReviewController;
 
 // === Auth routes ===
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
@@ -40,3 +41,8 @@ Route::delete('/admin/users/{id_user}', [AccountController::class, 'adminDestroy
 Route::get('/dashboard/movies/search-suggestions', [MovieController::class, 'searchSuggestions']);
 
 Route::get('/stream/{id}', [MovieController::class, 'stream'])->name('movie.stream');
+
+
+
+Route::get('/stream/{id}', [MovieController::class, 'stream']);
+Route::post('/reviews/store', [ReviewController::class, 'store'])->name('storeReview');

@@ -1,3 +1,4 @@
+<!-- resources/views/stream.blade.php -->
 <!DOCTYPE html>
 <html>
 
@@ -31,21 +32,29 @@
 
         .info-section {
             flex: 1;
-            padding: 40px 30px;
+            padding: 30px;
             background-color: #1a1a1a;
             overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
         }
 
-        .movie-details h2 {
+        .movie-details {
+            flex-grow: 1;
+        }
+
+        .info-section h2 {
             font-size: 26px;
             margin-bottom: 20px;
             color: #ffffff;
         }
 
-        .movie-details p {
+        .info-section p {
             font-size: 16px;
             color: #cccccc;
             margin-bottom: 12px;
+            line-height: 1.6;
         }
 
         .tag {
@@ -54,14 +63,16 @@
 
         .btn-back {
             display: inline-block;
+            margin-top: 30px;
             background-color: #e50914;
             color: white;
-            padding: 10px 20px;
+            padding: 12px 24px;
             text-align: center;
+            text-decoration: none;
+            font-weight: bold;
             border: none;
             border-radius: 6px;
-            cursor: pointer;
-            font-weight: bold;
+            transition: background-color 0.3s ease;
         }
 
         .btn-back:hover {
@@ -69,31 +80,31 @@
         }
 
         .rating-stars {
-            font-size: 26px;
+            font-size: 32px;
             color: #666;
             cursor: pointer;
+            margin-bottom: 10px;
         }
+
 
         .star {
             display: inline-block;
-            transition: color 0.2s;
         }
 
-        .star.selected {
+        .rating-stars .star.selected,
+        .rating-stars .star:hover,
+        .rating-stars .star.hover {
             color: #ffcc00;
         }
 
-        textarea {
-            width: 100%;
-            padding: 10px;
-            border-radius: 6px;
-            border: none;
-            resize: vertical;
-        }
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
 
-        hr {
-            border-color: #333;
-            margin: 25px 0;
+            .video-section {
+                height: 50vh;
+            }
         }
     </style>
 </head>
@@ -127,30 +138,33 @@
                     @endfor
                 </div>
 
-                <textarea name="comment" rows="4" placeholder="Tulis komentar Anda..."></textarea>
-                <button type="submit" class="btn-back" style="margin-top: 10px;">Kirim Review</button>
-            </form>
-
-            {{-- Review Pengguna --}}
-            <div style="margin-top: 30px;">
-                <h3>Review Pengguna:</h3>
-                @forelse ($reviews as $review)
-                    <div style="margin-bottom: 20px; border-bottom: 1px solid #444; padding-bottom: 10px;">
-                        <strong>{{ $review['user_name'] ?? 'User' }}</strong>
-                        <div class="rating-stars">
-                            @for ($i = 1; $i <= 5; $i++)
-                                @php $selected = $i <= (int) $review['rating'] ? 'selected' : ''; @endphp
-                                <span class="star {{ $selected }}">&#9733;</span>
-                            @endfor
-                        </div>
-                        <p>{{ $review['comment'] }}</p>
-                        <small><em>{{ \Carbon\Carbon::parse($review['created_at'])->format('d M Y H:i') }}</em></small>
+                    <div style="margin-bottom: 15px;">
+                        <textarea name="comment" rows="4" placeholder="Tulis komentar Anda..." style="width: 100%; padding: 10px; border-radius: 6px; border: none;"></textarea>
                     </div>
-                @empty
-                    <p>Belum ada review.</p>
-                @endforelse
 
+                    <button type="submit" class="btn-back" style="margin-top: 0;">Kirim Review</button>
+                </form>
             </div>
+
+            <!-- Review Pengguna -->
+            @if($reviews ?? false)
+                <div style="margin-top: 40px;">
+                    <h3>Review Pengguna:</h3>
+                    @forelse ($reviews as $review)
+                        <div style="margin-bottom: 20px; border-bottom: 1px solid #444; padding-bottom: 10px;">
+                            <div class="rating-stars">
+                                @for ($i = 1; $i <= 5; $i++)
+                                    <span class="star {{ $i <= $review['rating'] ? 'selected' : '' }}">&#9733;</span>
+                                @endfor
+                            </div>
+                            <p>{{ $review['comment'] }}</p>
+                            <small><em>{{ \Carbon\Carbon::parse($review['created_at'])->format('d M Y H:i') }}</em></small>
+                        </div>
+                    @empty
+                        <p>Belum ada review.</p>
+                    @endforelse
+                </div>
+            @endif
 
             <a href="{{ url('/dashboard/movies') }}" class="btn-back" style="margin-top: 20px;">Back to Dashboard</a>
         </div>
@@ -158,34 +172,35 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            const stars = document.querySelectorAll('#starRating .star');
+            const stars = document.querySelectorAll('.star');
             const ratingInput = document.getElementById('ratingInput');
 
-            function highlightStars(count) {
-                stars.forEach((star, index) => {
-                    star.classList.toggle('selected', index < count);
-                });
-            }
-
             stars.forEach(star => {
-                star.addEventListener('click', function () {
-                    const value = parseInt(this.dataset.value);
-                    ratingInput.value = value;
-                    highlightStars(value);
-                    console.log("Rating dipilih:", value);
-                });
-
                 star.addEventListener('mouseover', function () {
-                    const value = parseInt(this.dataset.value);
-                    highlightStars(value);
+                    highlightStars(parseInt(this.dataset.value));
                 });
 
                 star.addEventListener('mouseout', function () {
                     highlightStars(parseInt(ratingInput.value));
                 });
+
+                star.addEventListener('click', function () {
+                    const value = parseInt(this.dataset.value);
+                    ratingInput.value = value;
+                    highlightStars(value);
+                });
             });
+
+            function highlightStars(count) {
+                stars.forEach((star, index) => {
+                    if (index < count) {
+                        star.classList.add('selected');
+                    } else {
+                        star.classList.remove('selected');
+                    }
+                });
+            }
         });
     </script>
 </body>
-
 </html>
