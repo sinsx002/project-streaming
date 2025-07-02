@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Hash;
 
 class AccountController extends Controller
 {
@@ -42,34 +43,43 @@ class AccountController extends Controller
             'first_name' => 'required|string',
             'last_name' => 'required|string',
             'email' => 'required|email',
+            'current_password' => 'required_with:new_password,new_password_confirmation',
+            'new_password' => 'nullable|min:6|confirmed',
         ]);
 
-        // Kirim ke API
+        // Jika user ingin mengubah password
+        $newPassword = null;
+        if ($request->filled('new_password')) {
+            // Verifikasi password lama
+            if (!Hash::check($request->current_password, $user['password'])) {
+                return redirect()->back()->withErrors(['current_password' => 'Password lama tidak cocok'])->withInput();
+            }
+
+            // Enkripsi password baru
+            $newPassword = password_hash($request->new_password, PASSWORD_DEFAULT);
+        }
+
         $response = Http::put("http://localhost/project-streamingg/users.php?id_user=" . $user['id_user'], [
-            'id_user'    => $user['id_user'], // tambahkan ini agar PUT valid
+            'id_user'    => $user['id_user'],
             'username'   => $request->username,
             'first_name' => $request->first_name,
             'last_name'  => $request->last_name,
             'email'      => $request->email,
-            'password'   => $user['password'] ?? '', // pastikan dikirim jika dibutuhkan
+            'password'   => $newPassword ?? $user['password'],
         ]);
 
-        // Debug opsional:
-        // logger($response->body());
-
         if (!$response->ok()) {
-            return redirect()
-                ->back()
-                ->withErrors(['msg' => 'Gagal mengupdate data.'])
-                ->withInput()
-                ->with(['user' => $user]); // kirim user agar tidak undefined
+            return redirect()->back()->withErrors(['msg' => 'Gagal mengupdate data.'])->withInput();
         }
 
-        // Update session
+        // Perbarui session
         $user['username']   = $request->username;
         $user['first_name'] = $request->first_name;
         $user['last_name']  = $request->last_name;
         $user['email']      = $request->email;
+        if ($newPassword) {
+            $user['password'] = $newPassword;
+        }
         session(['user' => $user]);
 
         return redirect()->route('account.profile')->with('success', 'Profil berhasil diperbarui.');
@@ -112,7 +122,8 @@ class AccountController extends Controller
             return redirect('/dashboard/movies');
         }
 
-        $response = Http::delete("http://localhost/project-streamingg/users.php?id_user={$id_user}");
+        $response = Http::withBody(json_encode(['id_user' => $id_user]), 'application/json')
+                ->delete("http://localhost/project-streamingg/users.php");
 
         if ($response->ok()) {
             return redirect()->route('admin.users')->with('success', 'User berhasil dihapus.');

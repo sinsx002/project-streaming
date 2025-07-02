@@ -141,6 +141,12 @@
             $initials = strtoupper(substr($user['first_name'] ?? 'U', 0, 1));
         @endphp
 
+        @if (session('success'))
+            <div style="background-color: #d4edda; color: #155724; padding: 12px; border-radius: 6px; text-align: center; margin-bottom: 16px;">
+                {{ session('success') }}
+            </div>
+        @endif
+
         <div class="avatar">{{ $initials }}</div>
         <div class="name">{{ $user['first_name'] ?? '' }} {{ $user['last_name'] ?? '' }}</div>
         <div class="email">{{ $user['email'] ?? '' }}</div>

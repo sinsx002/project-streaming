@@ -72,7 +72,7 @@
     </style>
 </head>
 <body>
-    <h2>Edit Pengguna</h2>
+    <h2>Edit Account</h2>
 
     @if (session('success'))
         <div class="success-message">{{ session('success') }}</div>
@@ -90,6 +90,10 @@
         @csrf
         @method('PUT')
 
+        <div style="text-align: center; margin-top: 30px;">
+            <h2 style="font-size: 28px; font-weight: bold;">Change Data</h2>
+        </div>
+
         <label for="username">Username</label>
         <input type="text" id="username" name="username" value="{{ old('username', $user['username']) }}" required>
 
@@ -99,12 +103,13 @@
         <label for="last_name">Nama Belakang</label>
         <input type="text" id="last_name" name="last_name" value="{{ old('last_name', $user['last_name']) }}">
 
-        <label for="email">Email</label>
-        <input type="text" id="email" name="email" value="{{ old('email', $user['email']) }}">
+        <input type="hidden" id="email" name="email" value="{{ old('email', $user['email']) }}">
 
         <hr style="border: none; border-top: 1px solid #444; margin: 30px 0;">
-
-        <h3 style="color: #e50914; margin-bottom: 10px;">Ubah Password</h3>
+        
+        <div style="text-align: center; margin-top: 30px;">
+            <h2 style="font-size: 28px; font-weight: bold;">Change Password</h2>
+        </div>
 
         <label for="current_password">Password Lama</label>
         <input type="password" id="current_password" name="current_password" required>

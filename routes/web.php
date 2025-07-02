@@ -34,5 +34,8 @@ Route::middleware(['check.user'])->group(function () {
 Route::get('/admin/users', [AccountController::class, 'adminIndex'])->name('admin.users');
 Route::delete('/admin/users/{id_user}', [AccountController::class, 'adminDestroy'])->name('admin.users.destroy');
 
-
 Route::get('/dashboard/movies/search-suggestions', [MovieController::class, 'searchSuggestions']);
+
+Route::get('/stream/{id}', [MovieController::class, 'stream'])->name('movie.stream');
+
+Route::post('/reviews/store', [MovieController::class, 'storeReview'])->name('reviews.store');
